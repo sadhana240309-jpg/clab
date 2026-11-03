@@ -1,0 +1,133 @@
+#include <iostream>
+#include <vector>
+#include <memory>
+#include <string>
+using namespace std;
+
+/** @brief Observer interface. */
+class Observer
+{
+public:
+    virtual void notify(const string& msg) = 0; // Modified: message -> msg
+    virtual ~Observer() {}
+};
+
+/** @brief Email notification observer. */
+class EmailNotification : public Observer
+{
+private:
+    string mailId; // Modified: email -> mailId
+
+public:
+    EmailNotification(string e)
+    {
+        mailId = e;
+    }
+
+    void notify(const string& msg) override
+    {
+        cout << "My Email sent to " << mailId << ": " << msg << endl; // Modified message
+    }
+};
+
+/** @brief SMS notification observer. */
+class SMSNotification : public Observer
+{
+private:
+    string mobileNo; // Modified: phoneNumber -> mobileNo
+
+public:
+    SMSNotification(string number)
+    {
+        mobileNo = number;
+    }
+
+    void notify(const string& msg) override
+    {
+        cout << "My SMS sent to " << mobileNo << ": " << msg << endl; // Modified message
+    }
+};
+
+/** @brief Factory class for creating notifications. */
+class NotificationFactory
+{
+public:
+    static shared_ptr<Observer> createNotification(
+        const string& notifType, // Modified: type -> notifType
+        const string& target)    // Modified: receiver -> target
+    {
+        if (notifType == "EMAIL")
+        {
+            return make_shared<EmailNotification>(target);
+        }
+        else if (notifType == "SMS")
+        {
+            return make_shared<SMSNotification>(target);
+        }
+        return nullptr;
+    }
+};
+
+/** @brief Singleton Event Manager. */
+class EventManager
+{
+private:
+    vector<shared_ptr<Observer>> observerList; // Modified: observers -> observerList
+
+    EventManager() {} // Private constructor prevents external object creation
+
+public:
+    // Delete copy constructor and assignment operator
+    EventManager(const EventManager&) = delete;
+    EventManager& operator=(const EventManager&) = delete;
+
+    // Singleton access method
+    static EventManager& getInstance()
+    {
+        static EventManager myInstance; // Modified: instance -> myInstance
+        return myInstance;
+    }
+
+    void subscribe(shared_ptr<Observer> obs) // Modified: observer -> obs
+    {
+        observerList.push_back(obs);
+    }
+
+    void triggerEvent(const string& msg)
+    {
+        cout << "\nMy Event Triggered: " << msg << endl; // Modified message
+        cout << "My Sending Notifications...\n" << endl; // Modified message
+
+        for (auto obs : observerList)
+        {
+            obs->notify(msg);
+        }
+    }
+};
+
+int main()
+{
+    // Access Singleton EventManager
+    EventManager& eventMgr = EventManager::getInstance(); // Modified: manager -> eventMgr
+
+    // Create observers using Factory Pattern - YOUR OWN TEST CASE
+    shared_ptr<Observer> userEmail =
+        NotificationFactory::createNotification(
+            "EMAIL",
+            "karthi@gmail.com"); // Modified: student@gmail.com -> your own
+
+    shared_ptr<Observer> userSMS =
+        NotificationFactory::createNotification(
+            "SMS",
+            "6382054719"); // Modified: 9876543210 -> your own
+
+    // Subscribe observers
+    eventMgr.subscribe(userEmail);
+    eventMgr.subscribe(userSMS);
+
+    // Trigger event - YOUR OWN MESSAGE
+    eventMgr.triggerEvent(
+        "My College Symposium starts tomorrow!"); // Modified: University exam -> your own
+
+    return 0;
+}
