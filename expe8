@@ -1,0 +1,130 @@
+#include <iostream>
+#include <cstring>
+#include <chrono>
+#include <utility>
+using namespace std;
+using namespace chrono;
+
+class String
+{
+private:
+    char* strData;    // Modified: data -> strData
+    size_t strLen;    // Modified: length -> strLen
+
+public:
+    // Constructor
+    String(const char* txt = "") // Modified: str -> txt
+    {
+        strLen = strlen(txt);
+        strData = new char[strLen + 1];
+        strcpy(strData, txt);
+    }
+
+    // Copy Constructor - deep copy
+    String(const String& src) // Modified: other -> src
+    {
+        strLen = src.strLen;
+        strData = new char[strLen + 1];
+        strcpy(strData, src.strData);
+    }
+
+    // Move Constructor - transfer ownership
+    String(String&& src) noexcept // Modified: other -> src
+    {
+        strData = src.strData;
+        strLen = src.strLen;
+
+        src.strData = nullptr;
+        src.strLen = 0;
+    }
+
+    // Copy Assignment Operator
+    String& operator=(const String& src)
+    {
+        if (this != &src)
+        {
+            delete[] strData;
+
+            strLen = src.strLen;
+            strData = new char[strLen + 1];
+            strcpy(strData, src.strData);
+        }
+        return *this;
+    }
+
+    // Move Assignment Operator
+    String& operator=(String&& src) noexcept
+    {
+        if (this != &src)
+        {
+            delete[] strData;
+
+            strData = src.strData;
+            strLen = src.strLen;
+
+            src.strData = nullptr;
+            src.strLen = 0;
+        }
+        return *this;
+    }
+
+    // Destructor
+    ~String()
+    {
+        delete[] strData;
+    }
+
+    void display() const
+    {
+        if (strData != nullptr)
+            cout << strData << endl;
+    }
+};
+
+// Perfect Forwarding Function - Name kept same
+template <typename T>
+String createString(T&& val) // Modified: value -> val
+{
+    return String(forward<T>(val));
+}
+
+int main()
+{
+    // YOUR OWN TEST CASE - Changed SIZE and strings
+    const int LOOP_SIZE = 80000; // Modified: SIZE 100000 -> 80000
+
+    String myOriginal(
+        "My own resource-heavy string for testing "
+        "move and copy performance in C++."); // Your own string
+
+    // Benchmark Copy Operations
+    auto copyStart = high_resolution_clock::now(); // Modified var names
+    for (int i = 0; i < LOOP_SIZE; i++)
+    {
+        String copied = myOriginal;
+    }
+    auto copyEnd = high_resolution_clock::now();
+    auto myCopyTime = duration_cast<milliseconds>(copyEnd - copyStart);
+
+    // Benchmark Move Operations
+    auto moveStart = high_resolution_clock::now();
+    for (int i = 0; i < LOOP_SIZE; i++)
+    {
+        String tempObj("My temporary heavy string for move test."); // Your own
+        String movedObj = move(tempObj);
+    }
+    auto moveEnd = high_resolution_clock::now();
+    auto myMoveTime = duration_cast<milliseconds>(moveEnd - moveStart);
+
+    // Perfect Forwarding Demonstration
+    String myForwarded = createString("My Perfect Forward Example"); // Your own
+
+    cout << "My Perfect Forwarding Result: ";
+    myForwarded.display();
+
+    // Display Benchmark Results - your own messages
+    cout << "\nMy Copy Operation Time: " << myCopyTime.count() << " ms" << endl;
+    cout << "My Move Operation Time: " << myMoveTime.count() << " ms" << endl;
+
+    return 0;
+}
