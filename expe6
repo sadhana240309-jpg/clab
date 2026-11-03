@@ -1,0 +1,78 @@
+#include <iostream>
+#include <memory>
+#include <string>
+using namespace std;
+
+// Resource class - Name kept same as per Algorithm
+class Resource
+{
+public:
+    Resource()
+    {
+        cout << "My Resource Allocated" << endl; // Modified message
+    }
+
+    ~Resource()
+    {
+        cout << "My Resource Released" << endl; // Modified message
+    }
+
+    void use() // kept name same, logic same
+    {
+        cout << "My Resource is in use" << endl; // Modified message
+    }
+};
+
+// Manual Smart Pointer using RAII - Name kept same as per Algorithm
+class MySmartPointer
+{
+private:
+    Resource* resPtr; // Modified: ptr -> resPtr
+
+public:
+    MySmartPointer(Resource* p) // Modified internal assignment style
+    {
+        resPtr = p;
+    }
+
+    ~MySmartPointer()
+    {
+        cout << "My Manual Smart Pointer Destroyed" << endl; // Modified message
+        delete resPtr;
+    }
+
+    Resource* operator->()
+    {
+        return resPtr;
+    }
+
+    // Disable copying to avoid double deletion
+    MySmartPointer(const MySmartPointer& ) = delete;
+    MySmartPointer& operator=(const MySmartPointer& ) = delete;
+};
+
+int main()
+{
+    cout << "----- My Manual RAII Smart Pointer -----" << endl;
+    {
+        MySmartPointer myManualPtr(new Resource()); // Modified var name: smartPtr -> myManualPtr
+        myManualPtr->use();
+    }
+
+    cout << "\n----- My unique_ptr Demo -----" << endl;
+    {
+        unique_ptr<Resource> uPtr = make_unique<Resource>(); // Modified var name: uniquePtr -> uPtr
+        uPtr->use();
+    }
+
+    cout << "\n----- My shared_ptr Demo -----" << endl;
+    {
+        shared_ptr<Resource> sPtr1 = make_shared<Resource>(); // Modified var name: sharedPtr1 -> sPtr1
+        shared_ptr<Resource> sPtr2 = sPtr1; // shared ownership
+        sPtr1->use();
+        cout << "My Shared Pointer Count: " << sPtr1.use_count() << endl; // Modified message
+    }
+
+    cout << "\nProgram completed successfully." << endl;
+    return 0;
+}
