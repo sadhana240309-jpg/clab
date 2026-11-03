@@ -1,0 +1,111 @@
+#include <iostream>
+#include <stack>
+#include <queue>
+#include <chrono>
+using namespace std;
+using namespace chrono;
+
+template <typename T>  // Modified: class T -> typename T
+class MyStack
+{
+private:
+    T arr[15000]; // Modified: data -> arr, 10000 -> 15000
+    int topIdx;   // Modified: top -> topIdx
+
+public:
+    MyStack()
+    {
+        topIdx = -1;
+    }
+
+    void push(T val) // Modified: value -> val
+    {
+        if (topIdx < 14999)
+            arr[++topIdx] = val;
+    }
+
+    void pop()
+    {
+        if (topIdx >= 0)
+            topIdx--;
+    }
+};
+
+template <typename T>
+class MyQueue
+{
+private:
+    T arr[15000];
+    int fIdx, rIdx; // Modified: front,rear -> fIdx,rIdx
+
+public:
+    MyQueue()
+    {
+        fIdx = 0;
+        rIdx = -1;
+    }
+
+    void enqueue(T val)
+    {
+        if (rIdx < 14999)
+            arr[++rIdx] = val;
+    }
+
+    void dequeue()
+    {
+        if (fIdx <= rIdx)
+            fIdx++;
+    }
+};
+
+int main()
+{
+    const int N = 12000; // YOUR OWN TEST CASE: was 10000
+
+    // Custom Stack Benchmark
+    auto start = high_resolution_clock::now();
+    MyStack<int> myStack;
+    for (int i = 0; i < N; i++)
+        myStack.push(i);
+    for (int i = 0; i < N; i++)
+        myStack.pop();
+    auto end = high_resolution_clock::now();
+    auto customStackTime = duration_cast<microseconds>(end - start);
+
+    // STL Stack Benchmark
+    start = high_resolution_clock::now();
+    stack<int> stlStack;
+    for (int i = 0; i < N; i++)
+        stlStack.push(i);
+    for (int i = 0; i < N; i++)
+        stlStack.pop();
+    end = high_resolution_clock::now();
+    auto stlStackTime = duration_cast<microseconds>(end - start);
+
+    // Custom Queue Benchmark
+    start = high_resolution_clock::now();
+    MyQueue<int> myQueue;
+    for (int i = 0; i < N; i++)
+        myQueue.enqueue(i);
+    for (int i = 0; i < N; i++)
+        myQueue.dequeue();
+    end = high_resolution_clock::now();
+    auto customQueueTime = duration_cast<microseconds>(end - start);
+
+    // STL Queue Benchmark
+    start = high_resolution_clock::now();
+    queue<int> stlQueue;
+    for (int i = 0; i < N; i++)
+        stlQueue.push(i);
+    for (int i = 0; i < N; i++)
+        stlQueue.pop();
+    end = high_resolution_clock::now();
+    auto stlQueueTime = duration_cast<microseconds>(end - start);
+
+    cout << "Custom Stack Time: " << customStackTime.count() << " microseconds" << endl;
+    cout << "STL Stack Time: " << stlStackTime.count() << " microseconds" << endl;
+    cout << "Custom Queue Time: " << customQueueTime.count() << " microseconds" << endl;
+    cout << "STL Queue Time: " << stlQueueTime.count() << " microseconds" << endl;
+
+    return 0;
+}
