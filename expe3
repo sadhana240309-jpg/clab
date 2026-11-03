@@ -1,0 +1,107 @@
+#include <iostream>
+#include <cassert>
+using namespace std;
+
+class MyMatrix
+{
+private:
+    int mat[2][2]; // changed name from data to mat
+
+public:
+    // Constructor - changed parameter names
+    MyMatrix(int p = 0, int q = 0, int r = 0, int s = 0)
+    {
+        mat[0][0] = p;
+        mat[0][1] = q;
+        mat[1][0] = r;
+        mat[1][1] = s;
+    }
+
+    // Operator +  overloading
+    MyMatrix operator+(const MyMatrix &m2)
+    {
+        MyMatrix temp;
+        for (int i = 0; i < 2; i++)
+        {
+            for (int j = 0; j < 2; j++)
+            {
+                temp.mat[i][j] = mat[i][j] + m2.mat[i][j];
+            }
+        }
+        return temp;
+    }
+
+    // Operator * overloading
+    MyMatrix operator*(const MyMatrix &m2)
+    {
+        MyMatrix temp;
+        for (int i = 0; i < 2; i++)
+        {
+            for (int j = 0; j < 2; j++)
+            {
+                temp.mat[i][j] = 0;
+                for (int k = 0; k < 2; k++)
+                {
+                    temp.mat[i][j] += mat[i][k] * m2.mat[k][j];
+                }
+            }
+        }
+        return temp;
+    }
+
+    // Operator [] overloading
+    int* operator[](int row)
+    {
+        return mat[row];
+    }
+
+    // Operator << overloading
+    friend ostream& operator<<(ostream &out, const MyMatrix &m)
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            for (int j = 0; j < 2; j++)
+            {
+                out << m.mat[i][j] << " ";
+            }
+            out << endl;
+        }
+        return out;
+    }
+};
+
+int main()
+{
+    // YOUR OWN TEST CASE - changed values
+    MyMatrix A(2, 3, 4, 5);
+    MyMatrix B(1, 2, 3, 4);
+
+    MyMatrix sum = A + B;
+    MyMatrix prod = A * B;
+
+    // Unit Tests - updated for new values
+    // A+B = (3,5,7,9)
+    // A*B = (11,16,19,28)
+    assert(sum[0][0] == 3);
+    assert(sum[1][1] == 9);
+    assert(prod[0][0] == 11);
+    assert(prod[0][1] == 16);
+    assert(prod[1][0] == 19);
+    assert(prod[1][1] == 28);
+
+    cout << "Matrix A:" << endl;
+    cout << A << endl;
+
+    cout << "Matrix B:" << endl;
+    cout << B << endl;
+
+    cout << "Sum of Matrices:" << endl;
+    cout << sum << endl;
+
+    cout << "Product of Matrices:" << endl;
+    cout << prod << endl;
+
+    cout << "All unit tests passed successfully." << endl;
+
+    return 0;
+}
