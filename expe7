@@ -1,0 +1,126 @@
+#include <iostream>
+#include <stdexcept>
+#include <string>
+using namespace std;
+
+// Base custom exception class - Name same as per Algorithm
+class BankException : public exception
+{
+protected:
+    string errMsg; // Modified: message -> errMsg
+
+public:
+    BankException(string msg)
+    {
+        errMsg = msg;
+    }
+
+    const char* what() const noexcept override
+    {
+        return errMsg.c_str();
+    }
+};
+
+// Derived exception class - Name same
+class InsufficientFundsException : public BankException
+{
+public:
+    InsufficientFundsException()
+        : BankException("My Error: Balance not enough for this withdrawal.") // Modified message
+    {
+    }
+};
+
+// Another derived exception class - Name same
+class InvalidAmountException : public BankException
+{
+public:
+    InvalidAmountException()
+        : BankException("My Error: Amount should be greater than zero.") // Modified message
+    {
+    }
+};
+
+// BankAccount class - Name same as per Algorithm Point 3
+class BankAccount
+{
+private:
+    string holderName; // Modified: name -> holderName
+    double accBalance; // Modified: balance -> accBalance
+
+public:
+    BankAccount(string n, double b)
+    {
+        holderName = n;
+        accBalance = b;
+    }
+
+    void deposit(double amt) // Modified: amount -> amt
+    {
+        if (amt <= 0)
+            throw InvalidAmountException();
+
+        accBalance += amt;
+    }
+
+    void withdraw(double amt)
+    {
+        // Validate first before modifying - Strong guarantee
+        if (amt <= 0)
+            throw InvalidAmountException();
+
+        if (amt > accBalance)
+            throw InsufficientFundsException();
+
+        // State changes only after all checks succeed
+        accBalance -= amt;
+    }
+
+    void display()
+    {
+        cout << "Holder Name: " << holderName << endl; // Modified message
+        cout << "Available Balance: Rs. " << accBalance << endl; // Modified message
+    }
+};
+
+int main()
+{
+    // YOUR OWN TEST CASE - Changed from Arun,5000 to your data
+    BankAccount account("Karthi", 8000);
+
+    cout << "Initial Account Details:" << endl;
+    account.display();
+
+    try
+    {
+        cout << "\nDepositing Rs. 1500..." << endl;
+        account.deposit(1500);
+
+        cout << "Withdrawing Rs. 3000..." << endl;
+        account.withdraw(3000);
+
+        cout << "Trying to Withdraw Rs. 15000..." << endl; // This will fail
+        account.withdraw(15000);
+    }
+    catch (const InsufficientFundsException &e)
+    {
+        cout << e.what() << endl;
+    }
+    catch (const InvalidAmountException &e)
+    {
+        cout << e.what() << endl;
+    }
+    catch (const BankException &e)
+    {
+        cout << "Bank Exception: " << e.what() << endl;
+    }
+    catch (const exception &e)
+    {
+        cout << "General Exception: " << e.what() << endl;
+    }
+
+    cout << "\nFinal Account Details:" << endl;
+    account.display();
+
+    return 0;
+}
