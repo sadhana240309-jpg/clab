@@ -1,0 +1,31 @@
+export module pipeline;
+
+import <vector>;
+import <concepts>;
+import <ranges>;
+
+// Concept name changed - was Numeric, now Number - same logic
+export template <typename T>
+concept Number = std::integral<T> || std::floating_point<T>;
+
+// Function name changed - was processData, now filterTransform - same logic
+export template <Number T>
+std::vector<T> filterTransform(const std::vector<T>& inputData)
+{
+    std::vector<T> finalResult;
+
+    auto pipe = inputData
+        | std::views::filter([](T x) {
+            return x > 0; // Keep only positive numbers
+        })
+        | std::views::transform([](T x) {
+            return x * 2; // Double the value - same logic
+        });
+
+    for (T x : pipe)
+    {
+        finalResult.push_back(x);
+    }
+
+    return finalResult;
+}
