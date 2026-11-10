@@ -1,0 +1,99 @@
+#include <iostream>
+#include <fstream>
+#include <cstring>
+#include <memory>
+using namespace std;
+
+// Custom Allocator - slightly renamed and modified messages
+template <typename T>
+class SimpleAllocator {
+public:
+    using value_type = T;
+
+    SimpleAllocator() {}
+
+    template <typename U>
+    SimpleAllocator(const SimpleAllocator<U>&) {}
+
+    T* allocate(size_t n) {
+        cout << "[Allocator] Allocating memory for " << n << " record(s)" << endl;
+        return static_cast<T*>(::operator new(n * sizeof(T)));
+    }
+
+    void deallocate(T* p, size_t n) {
+        cout << "[Allocator] Deallocating memory" << endl;
+        ::operator delete(p);
+    }
+};
+
+// File Record - Added fileType as slight modification
+struct FileInfo {
+    char fileName[50];
+    int fileSize;
+    char fileType[20]; // NEW FIELD - slight modification
+};
+
+// Add file record
+void saveFile() {
+    FileInfo file;
+    SimpleAllocator<FileInfo> alloc;
+    FileInfo* ptr = alloc.allocate(1); // Use allocator - same logic
+
+    cout << "Enter File Name: ";
+    cin >> file.fileName;
+    cout << "Enter File Size (KB): ";
+    cin >> file.fileSize;
+    cout << "Enter File Type: ";
+    cin >> file.fileType;
+
+    *ptr = file;
+
+    ofstream outFile("miniFS.dat", ios::binary | ios::app);
+    if (outFile) {
+        outFile.write(reinterpret_cast<char*>(ptr), sizeof(FileInfo));
+        outFile.close();
+        cout << "File record saved successfully.\n";
+    } else {
+        cout << "Unable to open file.\n";
+    }
+    alloc.deallocate(ptr, 1);
+}
+
+// Display file records
+void showFiles() {
+    ifstream inFile("miniFS.dat", ios::binary);
+    if (!inFile) {
+        cout << "No file records found.\n";
+        return;
+    }
+
+    FileInfo file;
+    cout << "\n--- File System Records ---\n";
+    while (inFile.read(reinterpret_cast<char*>(&file), sizeof(FileInfo))) {
+        cout << "File Name: " << file.fileName << endl;
+        cout << "File Size: " << file.fileSize << " KB" << endl;
+        cout << "File Type: " << file.fileType << endl;
+        cout << "---------------------------\n";
+    }
+    inFile.close();
+}
+
+int main() {
+    int choice;
+    do {
+        cout << "\nMINI FILE SYSTEM SIMULATOR\n";
+        cout << "1. Add File\n";
+        cout << "2. Display Files\n";
+        cout << "3. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: saveFile(); break;
+            case 2: showFiles(); break;
+            case 3: cout << "Exiting File System Simulator...\n"; break;
+            default: cout << "Invalid choice.\n";
+        }
+    } while (choice != 3);
+    return 0;
+}
