@@ -1,0 +1,81 @@
+#include <iostream>
+using namespace std;
+
+// Unit definitions - slightly renamed
+struct M
+{
+    static constexpr double factor = 1.0; // base = meter
+};
+
+struct KM
+{
+    static constexpr double factor = 1000.0;
+};
+
+struct CM
+{
+    static constexpr double factor = 0.01;
+};
+
+// Added new unit slightly
+struct MM
+{
+    static constexpr double factor = 0.001;
+};
+
+// Template class for type-safe quantity - same logic
+template <typename Unit>
+class Value
+{
+private:
+    double amount;
+public:
+    constexpr Value(double v) : amount(v) {}
+
+    constexpr double getAmount() const
+    {
+        return amount;
+    }
+};
+
+// Template conversion function - same logic
+template <typename ToUnit, typename FromUnit>
+constexpr Value<ToUnit> changeUnit(const Value<FromUnit>& q)
+{
+    // Convert source unit to base unit
+    double baseAmount = q.getAmount() * FromUnit::factor;
+    // Convert base unit to target unit
+    double finalAmount = baseAmount / ToUnit::factor;
+    return Value<ToUnit>(finalAmount);
+}
+
+int main()
+{
+    // Test Case 1: 2500 meters
+    constexpr Value<M> dist1(2500);
+    constexpr auto km1 = changeUnit<KM>(dist1);
+    constexpr auto cm1 = changeUnit<CM>(dist1);
+    constexpr auto mm1 = changeUnit<MM>(dist1);
+
+    cout << "--- TEST CASE 1 ---" << endl;
+    cout << "Distance in Meters: " << dist1.getAmount() << " m" << endl;
+    cout << "Distance in Kilometers: " << km1.getAmount() << " km" << endl;
+    cout << "Distance in Centimeters: " << cm1.getAmount() << " cm" << endl;
+    cout << "Distance in Millimeters: " << mm1.getAmount() << " mm" << endl;
+
+    cout << endl;
+
+    // Test Case 2: 1.5 kilometers converted to other units
+    constexpr Value<KM> dist2(1.5);
+    constexpr auto m2 = changeUnit<M>(dist2);
+    constexpr auto cm2 = changeUnit<CM>(dist2);
+    constexpr auto mm2 = changeUnit<MM>(dist2);
+
+    cout << "--- TEST CASE 2 ---" << endl;
+    cout << "Distance in Kilometers: " << dist2.getAmount() << " km" << endl;
+    cout << "Distance in Meters: " << m2.getAmount() << " m" << endl;
+    cout << "Distance in Centimeters: " << cm2.getAmount() << " cm" << endl;
+    cout << "Distance in Millimeters: " << mm2.getAmount() << " mm" << endl;
+
+    return 0;
+}
